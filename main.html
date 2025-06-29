@@ -1113,20 +1113,41 @@
             loadCalendarEvents();
             renderCalendar();
             loadTodos();
+            loadPreferences();
             
             // Initialize voice assistant
             initVoiceAssistant();
             
             // Set up event listeners
             setupEventListeners();
+            
+            // Update music button state
+            const musicBtn = document.getElementById('music-btn');
+            if (musicPlaying) {
+                musicBtn.innerHTML = '<i class="fas fa-pause"></i> Music';
+                musicBtn.classList.add('active');
+            }
         });
         
         // Calendar events data structure
-        let calendarEvents = [
-            { id: 1, date: '2024-01-15', time: '10:00 AM', title: 'Project Review', description: 'Team meeting for project review' },
-            { id: 2, date: '2024-01-15', time: '2:30 PM', title: 'Client Meeting', description: 'Tech demo for client' },
-            { id: 3, date: '2024-01-16', time: '9:00 AM', title: 'Hardware Testing', description: 'ESP32 hardware testing session' }
-        ];
+        let calendarEvents = [];
+
+        // Load calendar events from localStorage
+        function loadCalendarEvents() {
+            const saved = localStorage.getItem('edith-calendar-events');
+            if (saved) {
+                calendarEvents = JSON.parse(saved);
+            } else {
+                // Only set default events if no saved data exists
+                calendarEvents = [
+                    { id: 1, date: '2024-01-15', time: '10:00 AM', title: 'Project Review', description: 'Team meeting for project review' },
+                    { id: 2, date: '2024-01-15', time: '2:30 PM', title: 'Client Meeting', description: 'Tech demo for client' },
+                    { id: 3, date: '2024-01-16', time: '9:00 AM', title: 'Hardware Testing', description: 'ESP32 hardware testing session' }
+                ];
+                // Save the default events
+                saveCalendarEvents();
+            }
+        }
 
         // Calendar rendering
         function renderCalendar() {
@@ -1342,13 +1363,6 @@
             localStorage.setItem('edith-calendar-events', JSON.stringify(calendarEvents));
         }
 
-        function loadCalendarEvents() {
-            const saved = localStorage.getItem('edith-calendar-events');
-            if (saved) {
-                calendarEvents = JSON.parse(saved);
-            }
-        }
-
         // Voice command calendar functions
         function processCalendarCommand(command) {
             // Extract date and event from command like "calendar tomorrow meeting with client"
@@ -1403,17 +1417,38 @@
         // To-Do List functionality
         function loadTodos() {
             const todoList = document.getElementById('todo-list');
-            const todos = [
-                { text: 'Review ESP32 design', completed: true },
-                { text: 'Prepare for client meeting', completed: false },
-                { text: 'Update documentation', completed: false }
-            ];
+            const savedTodos = localStorage.getItem('edith-todos');
+            
+            let todos;
+            if (savedTodos) {
+                todos = JSON.parse(savedTodos);
+            } else {
+                // Only set default todos if no saved data exists
+                todos = [
+                    { text: 'Review ESP32 design', completed: true },
+                    { text: 'Prepare for client meeting', completed: false },
+                    { text: 'Update documentation', completed: false }
+                ];
+                // Save the default todos
+                localStorage.setItem('edith-todos', JSON.stringify(todos));
+            }
             
             todoList.innerHTML = '';
             
             todos.forEach((todo) => {
                 addTodoToDOM(todo.text, todo.completed);
             });
+        }
+        
+        function saveTodos() {
+            const todos = [];
+            document.querySelectorAll('.todo-item').forEach(item => {
+                const text = item.querySelector('.todo-text').textContent;
+                const completed = item.querySelector('.todo-check').classList.contains('checked');
+                todos.push({ text, completed });
+            });
+            
+            localStorage.setItem('edith-todos', JSON.stringify(todos));
         }
         
         function addTodoToDOM(text, completed = false) {
@@ -1435,6 +1470,7 @@
             checkBtn.addEventListener('click', () => {
                 checkBtn.classList.toggle('checked');
                 todoText.classList.toggle('completed');
+                saveTodos();
             });
             
             deleteBtn.addEventListener('click', () => {
@@ -1442,6 +1478,7 @@
                 todoItem.style.opacity = '0';
                 setTimeout(() => {
                     todoItem.remove();
+                    saveTodos();
                 }, 300);
             });
             
@@ -1456,6 +1493,7 @@
             if (text) {
                 addTodoToDOM(text);
                 input.value = '';
+                saveTodos();
                 
                 // Animate the new task
                 const todos = document.querySelectorAll('.todo-item');
@@ -1861,8 +1899,10 @@
                 const btn = document.getElementById('theme-btn');
                 if (document.body.classList.contains('light-mode')) {
                     btn.innerHTML = '<i class="fas fa-moon"></i> Dark';
+                    localStorage.setItem('edith-theme', 'light');
                 } else {
                     btn.innerHTML = '<i class="fas fa-sun"></i> Light';
+                    localStorage.setItem('edith-theme', 'dark');
                 }
             });
             
@@ -1889,15 +1929,38 @@
         const voiceStartup = document.getElementById('voice-startup');
         const voiceCommand = document.getElementById('voice-command');
 
+        // Load saved preferences
+        function loadPreferences() {
+            // Load music state
+            const savedMusicState = localStorage.getItem('edith-music-playing');
+            if (savedMusicState === 'true') {
+                musicPlaying = true;
+                backgroundMusic.play().then(() => {
+                    backgroundMusic.volume = 0.3;
+                }).catch(error => {
+                    console.log('Music playback failed:', error);
+                    musicPlaying = false;
+                });
+            }
+            
+            // Load theme state
+            const savedTheme = localStorage.getItem('edith-theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-mode');
+            }
+        }
+
         function toggleMusic() {
             if (musicPlaying) {
                 backgroundMusic.pause();
                 musicPlaying = false;
+                localStorage.setItem('edith-music-playing', 'false');
                 return "Music stopped.";
             } else {
                 backgroundMusic.play().then(() => {
                     backgroundMusic.volume = 0.3;
                     musicPlaying = true;
+                    localStorage.setItem('edith-music-playing', 'true');
                 }).catch(error => {
                     console.log('Music playback failed:', error);
                     return "Music playback failed. Please check your browser settings.";

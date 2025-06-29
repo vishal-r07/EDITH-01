@@ -985,34 +985,6 @@
                     <span class="command-keyword">"Volume up/down"</span>
                     <span>Adjust music volume</span>
                 </div>
-                <div class="command-item">
-                    <span class="command-keyword">"Export data"</span>
-                    <span>Backup current data</span>
-                </div>
-                <div class="command-item">
-                    <span class="command-keyword">"Import data"</span>
-                    <span>Restore from backup</span>
-                </div>
-                <div class="command-item">
-                    <span class="command-keyword">"Clear all data"</span>
-                    <span>Reset all data</span>
-                </div>
-            </div>
-            
-            <div class="data-management" style="margin-top: 20px; padding: 15px; background: rgba(10, 20, 40, 0.5); border-radius: 10px; border: 1px solid rgba(0, 243, 255, 0.2);">
-                <h3 style="color: var(--primary); margin-bottom: 15px; font-size: 1.1rem; text-shadow: var(--glow); font-family: 'Orbitron', sans-serif;">Data Management</h3>
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <button class="btn" onclick="exportData(); speakText('Data exported successfully.');">
-                        <i class="fas fa-download"></i> Export Data
-                    </button>
-                    <button class="btn" onclick="document.getElementById('import-file').click();">
-                        <i class="fas fa-upload"></i> Import Data
-                    </button>
-                    <button class="btn" onclick="if(confirm('Clear all data?')) { localStorage.clear(); calendarEvents = []; location.reload(); }">
-                        <i class="fas fa-trash"></i> Clear All
-                    </button>
-                </div>
-                <input type="file" id="import-file" accept=".json" style="display: none;" onchange="handleFileImport(event)">
             </div>
         </div>
         
@@ -1063,19 +1035,19 @@
                     <button class="btn" id="add-task-button">
                         <i class="fas fa-plus"></i> 
                     </button>
-                </div>
             </div>
-            
-            <div class="panel">
-                <div class="panel-header">
-                    <div class="panel-title">
+        </div>
+        
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">
                         <i class="fas fa-project-diagram"></i> Projects
-                    </div>
+                </div>
                     <button class="btn">
                         <i class="fas fa-plus"></i> 
-                    </button>
-                </div>
-                
+                </button>
+            </div>
+            
                 <div class="project-grid">
                     <div class="project-card">
                         <div class="project-name">ESP32 Development</div>
@@ -1138,14 +1110,6 @@
             }, 3500);
             
             // Initialize modules
-            console.log('EDITH initialization started...');
-            
-            // Test localStorage first
-            if (!testLocalStorage()) {
-                console.error('localStorage is not available. Data persistence will not work.');
-                alert('Warning: localStorage is not available. Your data will not be saved between sessions.');
-            }
-            
             loadCalendarEvents();
             renderCalendar();
             loadTodos();
@@ -1163,8 +1127,6 @@
                 musicBtn.innerHTML = '<i class="fas fa-pause"></i> Music';
                 musicBtn.classList.add('active');
             }
-            
-            console.log('EDITH initialization completed');
         });
         
         // Calendar events data structure
@@ -1172,35 +1134,21 @@
 
         // Load calendar events from localStorage
         function loadCalendarEvents() {
-            try {
-                const saved = localStorage.getItem('edith-calendar-events');
-                console.log('Loading calendar events from localStorage:', saved ? 'found' : 'not found');
-                
-                if (saved) {
-                    calendarEvents = JSON.parse(saved);
-                    console.log('Loaded', calendarEvents.length, 'calendar events');
-                } else {
-                    // Only set default events if no saved data exists
-                    calendarEvents = [
-                        { id: 1, date: '2024-01-15', time: '10:00 AM', title: 'Project Review', description: 'Team meeting for project review' },
-                        { id: 2, date: '2024-01-15', time: '2:30 PM', title: 'Client Meeting', description: 'Tech demo for client' },
-                        { id: 3, date: '2024-01-16', time: '9:00 AM', title: 'Hardware Testing', description: 'ESP32 hardware testing session' }
-                    ];
-                    // Save the default events
-                    saveCalendarEvents();
-                    console.log('Set default calendar events');
-                }
-            } catch (error) {
-                console.error('Failed to load calendar events:', error);
-                // Set default events if loading fails
+            const saved = localStorage.getItem('edith-calendar-events');
+            if (saved) {
+                calendarEvents = JSON.parse(saved);
+            } else {
+                // Only set default events if no saved data exists
                 calendarEvents = [
                     { id: 1, date: '2024-01-15', time: '10:00 AM', title: 'Project Review', description: 'Team meeting for project review' },
                     { id: 2, date: '2024-01-15', time: '2:30 PM', title: 'Client Meeting', description: 'Tech demo for client' },
                     { id: 3, date: '2024-01-16', time: '9:00 AM', title: 'Hardware Testing', description: 'ESP32 hardware testing session' }
                 ];
+                // Save the default events
+                saveCalendarEvents();
             }
         }
-
+        
         // Calendar rendering
         function renderCalendar() {
             const calendarGrid = document.getElementById('calendar-grid');
@@ -1412,12 +1360,7 @@
         }
 
         function saveCalendarEvents() {
-            try {
-                localStorage.setItem('edith-calendar-events', JSON.stringify(calendarEvents));
-                console.log('Calendar events saved:', calendarEvents.length, 'events');
-            } catch (error) {
-                console.error('Failed to save calendar events:', error);
-            }
+            localStorage.setItem('edith-calendar-events', JSON.stringify(calendarEvents));
         }
 
         // Voice command calendar functions
@@ -1473,62 +1416,39 @@
         
         // To-Do List functionality
         function loadTodos() {
-            try {
-                const todoList = document.getElementById('todo-list');
-                const savedTodos = localStorage.getItem('edith-todos');
-                console.log('Loading todos from localStorage:', savedTodos ? 'found' : 'not found');
-                
-                let todos;
-                if (savedTodos) {
-                    todos = JSON.parse(savedTodos);
-                    console.log('Loaded', todos.length, 'todos');
-                } else {
-                    // Only set default todos if no saved data exists
-                    todos = [
-                        { text: 'Review ESP32 design', completed: true },
-                        { text: 'Prepare for client meeting', completed: false },
-                        { text: 'Update documentation', completed: false }
-                    ];
-                    // Save the default todos
-                    localStorage.setItem('edith-todos', JSON.stringify(todos));
-                    console.log('Set default todos');
-                }
-                
-                todoList.innerHTML = '';
-                
-                todos.forEach((todo) => {
-                    addTodoToDOM(todo.text, todo.completed);
-                });
-            } catch (error) {
-                console.error('Failed to load todos:', error);
-                // Set default todos if loading fails
-                const todoList = document.getElementById('todo-list');
-                todoList.innerHTML = '';
-                const defaultTodos = [
+            const todoList = document.getElementById('todo-list');
+            const savedTodos = localStorage.getItem('edith-todos');
+            
+            let todos;
+            if (savedTodos) {
+                todos = JSON.parse(savedTodos);
+            } else {
+                // Only set default todos if no saved data exists
+                todos = [
                     { text: 'Review ESP32 design', completed: true },
                     { text: 'Prepare for client meeting', completed: false },
                     { text: 'Update documentation', completed: false }
                 ];
-                defaultTodos.forEach((todo) => {
-                    addTodoToDOM(todo.text, todo.completed);
-                });
+                // Save the default todos
+                localStorage.setItem('edith-todos', JSON.stringify(todos));
             }
+            
+            todoList.innerHTML = '';
+            
+            todos.forEach((todo) => {
+                addTodoToDOM(todo.text, todo.completed);
+            });
         }
         
         function saveTodos() {
-            try {
-                const todos = [];
-                document.querySelectorAll('.todo-item').forEach(item => {
-                    const text = item.querySelector('.todo-text').textContent;
-                    const completed = item.querySelector('.todo-check').classList.contains('checked');
-                    todos.push({ text, completed });
-                });
-                
-                localStorage.setItem('edith-todos', JSON.stringify(todos));
-                console.log('Todos saved:', todos.length, 'todos');
-            } catch (error) {
-                console.error('Failed to save todos:', error);
-            }
+            const todos = [];
+            document.querySelectorAll('.todo-item').forEach(item => {
+                const text = item.querySelector('.todo-text').textContent;
+                const completed = item.querySelector('.todo-check').classList.contains('checked');
+                todos.push({ text, completed });
+            });
+            
+            localStorage.setItem('edith-todos', JSON.stringify(todos));
         }
         
         function addTodoToDOM(text, completed = false) {
@@ -1598,10 +1518,10 @@
             
             if (SpeechRecognition) {
                 recognition = new SpeechRecognition();
-                recognition.continuous = false;
-                recognition.lang = 'en-US';
-                recognition.interimResults = false;
-                recognition.maxAlternatives = 1;
+            recognition.continuous = false;
+            recognition.lang = 'en-US';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
             }
             
             // Speech synthesis setup
@@ -1616,8 +1536,8 @@
                     speakText(response);
                 } else {
                     if (recognition) {
-                        recognition.start();
-                        listenBtn.classList.add('active');
+                    recognition.start();
+                    listenBtn.classList.add('active');
                         playCommandSound();
                         const response = "Listening... Speak now.";
                         responseContent.textContent = response;
@@ -1631,22 +1551,22 @@
             });
             
             if (recognition) {
-                recognition.onresult = (event) => {
-                    const speechResult = event.results[0][0].transcript.toLowerCase();
-                    listenBtn.classList.remove('active');
-                    showTypingIndicator();
-                    
-                    setTimeout(() => {
-                        processVoiceCommand(speechResult);
-                    }, 2000);
-                };
+            recognition.onresult = (event) => {
+                const speechResult = event.results[0][0].transcript.toLowerCase();
+                listenBtn.classList.remove('active');
+                showTypingIndicator();
                 
-                recognition.onerror = (event) => {
-                    listenBtn.classList.remove('active');
+                setTimeout(() => {
+                    processVoiceCommand(speechResult);
+                }, 2000);
+            };
+            
+            recognition.onerror = (event) => {
+                listenBtn.classList.remove('active');
                     const response = "Error occurred in recognition: " + event.error;
                     responseContent.textContent = response;
                     speakText(response);
-                };
+            };
             }
             
             speakBtn.addEventListener('click', () => {
@@ -1886,22 +1806,6 @@
                     }
                 }
                 
-                // Data management commands
-                else if (command.includes('export data') || command.includes('backup data')) {
-                    response = exportData();
-                } else if (command.includes('import data') || command.includes('restore data')) {
-                    response = "Please use the browser's file input to import your backup file. I cannot directly access files through voice commands.";
-                } else if (command.includes('clear all data') || command.includes('reset data')) {
-                    if (confirm('Are you sure you want to clear all data? This cannot be undone.')) {
-                        localStorage.clear();
-                        calendarEvents = [];
-                        location.reload();
-                        return; // Page will reload
-                    } else {
-                        response = "Data reset cancelled.";
-                    }
-                }
-                
                 responseContent.innerHTML = response;
                 speakText(response);
             }
@@ -1996,7 +1900,7 @@
                 if (document.body.classList.contains('light-mode')) {
                     btn.innerHTML = '<i class="fas fa-moon"></i> Dark';
                     localStorage.setItem('edith-theme', 'light');
-                } else {
+            } else {
                     btn.innerHTML = '<i class="fas fa-sun"></i> Light';
                     localStorage.setItem('edith-theme', 'dark');
                 }
@@ -2009,7 +1913,7 @@
                 if (musicPlaying) {
                     btn.innerHTML = '<i class="fas fa-pause"></i> Music';
                     btn.classList.add('active');
-                } else {
+            } else {
                     btn.innerHTML = '<i class="fas fa-music"></i> Music';
                     btn.classList.remove('active');
                 }
@@ -2027,36 +1931,22 @@
 
         // Load saved preferences
         function loadPreferences() {
-            try {
-                console.log('Loading preferences from localStorage...');
-                
-                // Load music state
-                const savedMusicState = localStorage.getItem('edith-music-playing');
-                console.log('Music state:', savedMusicState);
-                
-                if (savedMusicState === 'true') {
-                    musicPlaying = true;
-                    backgroundMusic.play().then(() => {
-                        backgroundMusic.volume = 0.3;
-                        console.log('Music resumed from saved state');
-                    }).catch(error => {
-                        console.log('Music playback failed:', error);
-                        musicPlaying = false;
-                    });
-                }
-                
-                // Load theme state
-                const savedTheme = localStorage.getItem('edith-theme');
-                console.log('Theme state:', savedTheme);
-                
-                if (savedTheme === 'light') {
-                    document.body.classList.add('light-mode');
-                    console.log('Light theme applied');
-                }
-                
-                console.log('Preferences loaded successfully');
-            } catch (error) {
-                console.error('Failed to load preferences:', error);
+            // Load music state
+            const savedMusicState = localStorage.getItem('edith-music-playing');
+            if (savedMusicState === 'true') {
+                musicPlaying = true;
+                backgroundMusic.play().then(() => {
+                    backgroundMusic.volume = 0.3;
+                }).catch(error => {
+                    console.log('Music playback failed:', error);
+                    musicPlaying = false;
+                });
+            }
+            
+            // Load theme state
+            const savedTheme = localStorage.getItem('edith-theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-mode');
             }
         }
 
@@ -2215,115 +2105,6 @@
             }
             
             return null;
-        }
-
-        // Test localStorage availability
-        function testLocalStorage() {
-            try {
-                const testKey = 'edith-test';
-                localStorage.setItem(testKey, 'test');
-                const result = localStorage.getItem(testKey);
-                localStorage.removeItem(testKey);
-                
-                if (result === 'test') {
-                    console.log('localStorage is working properly');
-                    return true;
-                } else {
-                    console.error('localStorage test failed');
-                    return false;
-                }
-            } catch (error) {
-                console.error('localStorage is not available:', error);
-                return false;
-            }
-        }
-
-        // Export data function (for backup)
-        function exportData() {
-            try {
-                const data = {
-                    calendarEvents: calendarEvents,
-                    todos: JSON.parse(localStorage.getItem('edith-todos') || '[]'),
-                    preferences: {
-                        musicPlaying: localStorage.getItem('edith-music-playing'),
-                        theme: localStorage.getItem('edith-theme')
-                    },
-                    exportDate: new Date().toISOString()
-                };
-                
-                const dataStr = JSON.stringify(data, null, 2);
-                const dataBlob = new Blob([dataStr], {type: 'application/json'});
-                const url = URL.createObjectURL(dataBlob);
-                
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `edith-backup-${new Date().toISOString().split('T')[0]}.json`;
-                link.click();
-                
-                URL.revokeObjectURL(url);
-                console.log('Data exported successfully');
-                return "Data exported successfully.";
-            } catch (error) {
-                console.error('Failed to export data:', error);
-                return "Failed to export data.";
-            }
-        }
-
-        // Import data function
-        function importData(jsonData) {
-            try {
-                const data = JSON.parse(jsonData);
-                
-                if (data.calendarEvents) {
-                    calendarEvents = data.calendarEvents;
-                    saveCalendarEvents();
-                }
-                
-                if (data.todos) {
-                    localStorage.setItem('edith-todos', JSON.stringify(data.todos));
-                }
-                
-                if (data.preferences) {
-                    if (data.preferences.musicPlaying) {
-                        localStorage.setItem('edith-music-playing', data.preferences.musicPlaying);
-                    }
-                    if (data.preferences.theme) {
-                        localStorage.setItem('edith-theme', data.preferences.theme);
-                    }
-                }
-                
-                // Reload the interface
-                renderCalendar();
-                loadTodos();
-                loadPreferences();
-                
-                console.log('Data imported successfully');
-                return "Data imported successfully.";
-            } catch (error) {
-                console.error('Failed to import data:', error);
-                return "Failed to import data.";
-            }
-        }
-
-        // File import handler
-        function handleFileImport(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    try {
-                        const result = importData(e.target.result);
-                        speakText(result);
-                        console.log('Data imported from file');
-                    } catch (error) {
-                        console.error('Failed to import file:', error);
-                        speakText('Failed to import data. Please check the file format.');
-                    }
-                };
-                reader.readAsText(file);
-            }
-            // Reset the input
-            event.target.value = '';
         }
     </script>
 </body>

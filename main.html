@@ -926,7 +926,7 @@
                     <span>Mark task as done</span>
                 </div>
                 <div class="command-item">
-                    <span class="command-keyword">"Show tasks"</span>
+                    <span class="command-keyword">"Show task"</span>
                     <span>List all tasks</span>
                 </div>
                 <div class="command-item">
@@ -1624,7 +1624,7 @@
                     } else {
                         response = "Please specify which task to mark as completed.";
                     }
-                } else if (command.includes('show tasks') || command.includes('list tasks')) {
+                } else if (command.includes('show task') || command.includes('list tasks')) {
                     const tasks = getTaskList();
                     if (tasks.length > 0) {
                         response = `Your current tasks: ${tasks.join(', ')}.`;
